@@ -18,6 +18,7 @@ be installed with ``python -m pip install pyautogui``.
 
 
 
+
 """
 
 
@@ -26,7 +27,6 @@ screen is required so the script knows when to start the next run.
 
 Requires the [PyAutoGUI](https://pyautogui.readthedocs.io/) package, which can
 be installed with ``python -m pip install pyautogui``.
-
 
 
 
@@ -39,6 +39,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Tuple
+
 
 
 import sys
@@ -72,6 +73,7 @@ class FarmerConfig:
 
 
 
+
     complete_img:
         Path to an image on disk that appears when a run is complete,
         e.g. a screenshot of the "Victory" banner.
@@ -85,6 +87,7 @@ class FarmerConfig:
 
     start_button: Tuple[int, int]
     img_dir: str
+
 
     complete_img: str
 
@@ -107,6 +110,7 @@ class RSLFarmer:
             raise RuntimeError(f"No completion images found in '{config.img_dir}'.")
 
 
+
                 "pyautogui is required but not installed. Install with 'pip install pyautogui'."
             )
         self.config = config
@@ -119,6 +123,7 @@ class RSLFarmer:
             for img in self.images:
                 if pyautogui.locateOnScreen(img, confidence=0.8):
                     return
+
 
 
             if pyautogui.locateOnScreen(self.config.complete_img, confidence=0.8):
@@ -153,7 +158,15 @@ def _parse_args() -> argparse.Namespace:
         help="Path to configuration file with start button coords and settings",
     )
     parser.add_argument(
+        "--runs", type=int, help="Number of runs to perform"
+    )
+    parser.add_argument(
+        "--gui",
+        action="store_true",
+        help="Open a Tkinter window to configure and start the farmer",
+
         "--runs", type=int, default=1, help="Number of runs to perform"
+
     )
     return parser.parse_args()
 
@@ -174,6 +187,82 @@ def load_config(path: str) -> FarmerConfig:
         run_delay=run_delay,
         timeout=timeout,
     )
+
+
+def run_gui(config_path: str) -> None:
+    """Open a simple Tkinter window to configure and start the farmer."""
+
+    if pyautogui is None:
+        raise RuntimeError(
+            "pyautogui is required for the GUI. Install it with 'python -m pip install pyautogui'."
+        )
+
+    import tkinter as tk
+    from tkinter import filedialog, messagebox
+
+    # Load existing configuration if available
+    cfg = None
+    try:
+        cfg = load_config(config_path)
+    except Exception:
+        cfg = FarmerConfig(start_button=(0, 0), img_dir="images")
+
+    root = tk.Tk()
+    root.title("RSL Farmer")
+
+    start_x_var = tk.StringVar(value=str(cfg.start_button[0]))
+    start_y_var = tk.StringVar(value=str(cfg.start_button[1]))
+    img_dir_var = tk.StringVar(value=cfg.img_dir)
+    runs_var = tk.StringVar(value="1")
+    run_delay_var = tk.StringVar(value=str(cfg.run_delay))
+    timeout_var = tk.StringVar(value=str(cfg.timeout))
+
+    def grab_coords() -> None:
+        messagebox.showinfo(
+            "Grab Coordinates",
+            "Move the mouse over the Start/Replay button and click OK",
+        )
+        x, y = pyautogui.position()
+        start_x_var.set(str(x))
+        start_y_var.set(str(y))
+
+    def choose_dir() -> None:
+        path = filedialog.askdirectory()
+        if path:
+            img_dir_var.set(path)
+
+    def start_farming() -> None:
+        try:
+            config = FarmerConfig(
+                start_button=(int(start_x_var.get()), int(start_y_var.get())),
+                img_dir=img_dir_var.get(),
+                run_delay=float(run_delay_var.get()),
+                timeout=float(timeout_var.get()),
+            )
+            farmer = RSLFarmer(config)
+            farmer.run(int(runs_var.get()))
+            messagebox.showinfo("RSL Farmer", "Farming complete")
+        except Exception as exc:
+            messagebox.showerror("RSL Farmer", str(exc))
+
+    tk.Label(root, text="Start X").grid(row=0, column=0, sticky="e")
+    tk.Entry(root, textvariable=start_x_var, width=6).grid(row=0, column=1)
+    tk.Label(root, text="Start Y").grid(row=0, column=2, sticky="e")
+    tk.Entry(root, textvariable=start_y_var, width=6).grid(row=0, column=3)
+    tk.Button(root, text="Grab", command=grab_coords).grid(row=0, column=4)
+
+    tk.Label(root, text="Images").grid(row=1, column=0, sticky="e")
+    tk.Entry(root, textvariable=img_dir_var, width=30).grid(row=1, column=1, columnspan=3)
+    tk.Button(root, text="Browse", command=choose_dir).grid(row=1, column=4)
+
+    tk.Label(root, text="Runs").grid(row=2, column=0, sticky="e")
+    tk.Entry(root, textvariable=runs_var, width=6).grid(row=2, column=1)
+    tk.Label(root, text="Delay").grid(row=2, column=2, sticky="e")
+    tk.Entry(root, textvariable=run_delay_var, width=6).grid(row=2, column=3)
+
+    tk.Label(root, text="Timeout").grid(row=3, column=0, sticky="e")
+    tk.Entry(root, textvariable=timeout_var, width=6).grid(row=3, column=1)
+    tk.Button(root, text="Start", command=start_farming).grid(row=3, column=4)
 
 def launch_gui() -> None:
     """Open a simple Tkinter window to configure and start the farmer."""
@@ -253,9 +342,16 @@ def launch_gui() -> None:
 
     tk.Button(frm, text="Start", command=start_runs).grid(row=4, column=0, columnspan=5, pady=(10, 0))
 
+
     root.mainloop()
 
 
+def main() -> None:
+    args = _parse_args()
+    if args.gui or args.runs is None:
+        run_gui(args.config)
+        return
+    config = load_config(args.config)
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--gui", action="store_true", help="Launch configuration window")

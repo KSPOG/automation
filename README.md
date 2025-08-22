@@ -38,6 +38,7 @@ farmer will consider the run finished when any image in that directory appears o
 
 You can grab the coordinates with the helper script (run from a terminal, not the
 Python `help>` prompt):
+
 You can grab the coordinates with the helper script:
 
 ```
@@ -51,8 +52,10 @@ If PyAutoGUI isn't installed you'll see a message explaining how to add it. Once
 script is running, move the cursor over the "Start"/"Replay" button and press
 `Ctrl+C`. The final `x, y` values printed to the terminal can be copied into
 `config.ini`.
+
 Move the cursor over the "Start"/"Replay" button and press `Ctrl+C`. The final
 `x, y` values printed to the terminal can be copied into `config.ini`.
+
 
 Run the farmer from a shell (not the Python `help>` prompt):
 
@@ -61,6 +64,14 @@ python rsl_farmer.py --runs 10
 ```
 
 Use `--config` to point to a different configuration file if needed.
+
+You can also configure and launch the script through a small GUI:
+
+```bash
+python rsl_farmer.py --gui
+```
+
+On Windows, double‑click `run_farmer_gui.bat` to open the same window.
 
 Run the farmer from a shell (not the Python `help>` prompt):
 
@@ -106,4 +117,5 @@ python rsl_farmer.py
 
 The GUI lets you capture the start button coordinates, choose the completion
 image and tweak run settings.
+
 
