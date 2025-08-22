@@ -8,6 +8,7 @@ finished.  It is inspired by the automation features of
 
 The game client must be visible on screen and the coordinates of the
 
+
 "Start"/"Replay" button supplied via ``config.ini``.  Screenshots that appear
 when a run completes (e.g. "Victory" or "Defeat" banners) are loaded from the
 ``images/`` directory so the script knows when to start the next run.
@@ -15,11 +16,15 @@ when a run completes (e.g. "Victory" or "Defeat" banners) are loaded from the
 Requires the [PyAutoGUI](https://pyautogui.readthedocs.io/) package, which can
 be installed with ``python -m pip install pyautogui``.
 
+"""
+
+
 "Start"/"Replay" button supplied.  An image of the "Victory" (or "Defeat")
 screen is required so the script knows when to start the next run.
 
 Requires the [PyAutoGUI](https://pyautogui.readthedocs.io/) package, which can
 be installed with ``python -m pip install pyautogui``.
+
 
 
 
@@ -33,6 +38,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Tuple
 
+
 import sys
 import time
 from dataclasses import dataclass
@@ -43,6 +49,7 @@ try:  # pragma: no cover - tkinter may be unavailable in some environments
     from tkinter import filedialog, messagebox
 except Exception:  # pragma: no cover
     tk = None  # type: ignore
+
 
 try:
     import pyautogui
@@ -62,9 +69,11 @@ class FarmerConfig:
         Directory containing images that indicate a run has completed,
         e.g. screenshots of the "Victory" or "Defeat" banners.
 
+
     complete_img:
         Path to an image on disk that appears when a run is complete,
         e.g. a screenshot of the "Victory" banner.
+
 
     run_delay:
         Delay between checks in seconds while waiting for a run to finish.
@@ -74,7 +83,9 @@ class FarmerConfig:
 
     start_button: Tuple[int, int]
     img_dir: str
+
     complete_img: str
+
     run_delay: float = 2.0
     timeout: float = 120.0
 
@@ -93,9 +104,11 @@ class RSLFarmer:
         if not self.images:
             raise RuntimeError(f"No completion images found in '{config.img_dir}'.")
 
+
                 "pyautogui is required but not installed. Install with 'pip install pyautogui'."
             )
         self.config = config
+
 
 
     def _wait_for_complete(self) -> None:
@@ -104,8 +117,10 @@ class RSLFarmer:
             for img in self.images:
                 if pyautogui.locateOnScreen(img, confidence=0.8):
                     return
+
             if pyautogui.locateOnScreen(self.config.complete_img, confidence=0.8):
                 return
+
 
             if time.time() - start_time > self.config.timeout:
                 raise RuntimeError("Run timed out waiting for completion image.")
@@ -157,6 +172,7 @@ def load_config(path: str) -> FarmerConfig:
         run_delay=run_delay,
         timeout=timeout,
     )
+
 def launch_gui() -> None:
     """Open a simple Tkinter window to configure and start the farmer."""
     if tk is None:
@@ -278,9 +294,11 @@ def _parse_args() -> argparse.Namespace:
 
 
 
+
 def main() -> None:
     args = _parse_args()
     config = load_config(args.config)
+
     if args.gui:
         launch_gui()
         return
@@ -290,6 +308,7 @@ def main() -> None:
         run_delay=args.delay,
         timeout=args.timeout,
     )
+
     farmer = RSLFarmer(config)
     farmer.run(args.runs)
 
