@@ -5,17 +5,26 @@ Move the cursor to the desired location and press Ctrl+C to exit. The
 last printed coordinates can be copied into ``config.ini``.
 """
 
+import sys
 import time
 
 try:
     import pyautogui
 except Exception:  # pragma: no cover - environment may not have pyautogui
+
+    print(
+        "pyautogui is required but not installed. Install it with 'python -m pip install pyautogui'.",
+        file=sys.stderr,
+    )
+    sys.exit(1)
+
     pyautogui = None  # type: ignore
 
 if pyautogui is None:
     raise RuntimeError(
         "pyautogui is required but not installed. Install it with 'python -m pip install pyautogui'."
     )
+
 
 print("Move the mouse to the target and press Ctrl+C to capture the coordinates.")
 try:

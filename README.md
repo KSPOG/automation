@@ -36,12 +36,21 @@ Create an `images/` directory in the project root and place one or more screensh
 that signify a completed run (e.g. "Victory" or "Defeat" banners) inside it. The
 farmer will consider the run finished when any image in that directory appears on screen.
 
+You can grab the coordinates with the helper script (run from a terminal, not the
+Python `help>` prompt):
 You can grab the coordinates with the helper script:
 
 ```
 python grab_coords.py
 ```
 
+On Windows you can instead double‑click `run_grab_coords.bat` which launches the same
+helper and keeps the window open after it prints the final coordinates.
+
+If PyAutoGUI isn't installed you'll see a message explaining how to add it. Once the
+script is running, move the cursor over the "Start"/"Replay" button and press
+`Ctrl+C`. The final `x, y` values printed to the terminal can be copied into
+`config.ini`.
 Move the cursor over the "Start"/"Replay" button and press `Ctrl+C`. The final
 `x, y` values printed to the terminal can be copied into `config.ini`.
 
@@ -60,6 +69,7 @@ python rsl_farmer.py --runs 10
 ```
 
 Use `--config` to point to a different configuration file if needed.
+
 
 Install dependencies and run the farmer:
 

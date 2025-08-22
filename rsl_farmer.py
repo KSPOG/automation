@@ -8,13 +8,15 @@ finished.  It is inspired by the automation features of
 
 The game client must be visible on screen and the coordinates of the
 
-
 "Start"/"Replay" button supplied via ``config.ini``.  Screenshots that appear
 when a run completes (e.g. "Victory" or "Defeat" banners) are loaded from the
 ``images/`` directory so the script knows when to start the next run.
 
 Requires the [PyAutoGUI](https://pyautogui.readthedocs.io/) package, which can
 be installed with ``python -m pip install pyautogui``.
+"""
+
+
 
 """
 
@@ -50,7 +52,6 @@ try:  # pragma: no cover - tkinter may be unavailable in some environments
 except Exception:  # pragma: no cover
     tk = None  # type: ignore
 
-
 try:
     import pyautogui
 except Exception:  # pragma: no cover - environment may not have pyautogui
@@ -68,6 +69,7 @@ class FarmerConfig:
     img_dir:
         Directory containing images that indicate a run has completed,
         e.g. screenshots of the "Victory" or "Defeat" banners.
+
 
 
     complete_img:
@@ -118,9 +120,9 @@ class RSLFarmer:
                 if pyautogui.locateOnScreen(img, confidence=0.8):
                     return
 
+
             if pyautogui.locateOnScreen(self.config.complete_img, confidence=0.8):
                 return
-
 
             if time.time() - start_time > self.config.timeout:
                 raise RuntimeError("Run timed out waiting for completion image.")
@@ -293,11 +295,10 @@ def _parse_args() -> argparse.Namespace:
 
 
 
-
-
 def main() -> None:
     args = _parse_args()
     config = load_config(args.config)
+
 
     if args.gui:
         launch_gui()
