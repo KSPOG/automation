@@ -12,6 +12,7 @@ screen is required so the script knows when to start the next run.
 
 Requires the [PyAutoGUI](https://pyautogui.readthedocs.io/) package, which can
 be installed with ``python -m pip install pyautogui``.
+
 """
 
 from __future__ import annotations
@@ -64,6 +65,7 @@ class RSLFarmer:
         if pyautogui is None:
             raise RuntimeError(
                 "pyautogui is required but not installed. Install it with 'python -m pip install pyautogui'."
+                "pyautogui is required but not installed. Install with 'pip install pyautogui'."
             )
         self.config = config
 
@@ -194,6 +196,23 @@ def _parse_args() -> argparse.Namespace:
     ):
         parser.error("--start-x, --start-y and --complete-img are required unless --gui is used")
     return args
+
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--start-x", type=int, required=True,
+                        help="X coordinate of Start/Replay button")
+    parser.add_argument("--start-y", type=int, required=True,
+                        help="Y coordinate of Start/Replay button")
+    parser.add_argument("--complete-img", required=True,
+                        help="Path to an image that signifies a completed run")
+    parser.add_argument("--runs", type=int, default=1,
+                        help="Number of runs to perform")
+    parser.add_argument("--delay", type=float, default=2.0,
+                        help="Delay between checks in seconds")
+    parser.add_argument("--timeout", type=float, default=120.0,
+                        help="Maximum time to wait for completion image")
+    return parser.parse_args()
+
 
 
 def main() -> None:

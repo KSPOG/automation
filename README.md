@@ -31,6 +31,18 @@ Run these commands from a shell (not the Python `help>` prompt):
 
 ```bash
 python -m pip install -r requirements.txt  # installs PyAutoGUI and other dependencies
+
+
+PyAutoGUI is available on PyPI and can be installed with `pip install pyautogui`
+or via the requirements file below.
+
+
+Install dependencies and run the farmer:
+
+```bash
+pip install -r requirements.txt  # installs PyAutoGUI and other dependencies
+pip install -r requirements.txt
+
 python rsl_farmer.py --start-x 1000 --start-y 800 --complete-img victory.png --runs 10
 ```
 
