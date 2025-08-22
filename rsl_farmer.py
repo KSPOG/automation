@@ -9,14 +9,25 @@ finished.  It is inspired by the automation features of
 The game client must be visible on screen and the coordinates of the
 "Start"/"Replay" button supplied.  An image of the "Victory" (or "Defeat")
 screen is required so the script knows when to start the next run.
+
+Requires the [PyAutoGUI](https://pyautogui.readthedocs.io/) package, which can
+be installed with ``python -m pip install pyautogui``.
+
 """
 
 from __future__ import annotations
 
 import argparse
+import sys
 import time
 from dataclasses import dataclass
 from typing import Tuple
+
+try:  # pragma: no cover - tkinter may be unavailable in some environments
+    import tkinter as tk
+    from tkinter import filedialog, messagebox
+except Exception:  # pragma: no cover
+    tk = None  # type: ignore
 
 try:
     import pyautogui
@@ -53,6 +64,7 @@ class RSLFarmer:
     def __init__(self, config: FarmerConfig):
         if pyautogui is None:
             raise RuntimeError(
+                "pyautogui is required but not installed. Install it with 'python -m pip install pyautogui'."
                 "pyautogui is required but not installed. Install with 'pip install pyautogui'."
             )
         self.config = config
@@ -83,6 +95,108 @@ class RSLFarmer:
             time.sleep(self.config.run_delay)
 
 
+def launch_gui() -> None:
+    """Open a simple Tkinter window to configure and start the farmer."""
+    if tk is None:
+        raise RuntimeError("tkinter is required for the GUI but is not available.")
+    if pyautogui is None:
+        raise RuntimeError(
+            "pyautogui is required but not installed. Install it with 'python -m pip install pyautogui'."
+        )
+
+    root = tk.Tk()
+    root.title("RSL Farmer")
+
+    start_x_var = tk.StringVar()
+    start_y_var = tk.StringVar()
+    img_var = tk.StringVar()
+    runs_var = tk.StringVar(value="1")
+    delay_var = tk.StringVar(value="2.0")
+    timeout_var = tk.StringVar(value="120.0")
+
+    def capture_start() -> None:
+        root.withdraw()
+        time.sleep(3)
+        x, y = pyautogui.position()
+        start_x_var.set(str(x))
+        start_y_var.set(str(y))
+        root.deiconify()
+
+    def browse_img() -> None:
+        path = filedialog.askopenfilename()
+        if path:
+            img_var.set(path)
+
+    def start_runs() -> None:
+        try:
+            config = FarmerConfig(
+                start_button=(int(start_x_var.get()), int(start_y_var.get())),
+                complete_img=img_var.get(),
+                run_delay=float(delay_var.get()),
+                timeout=float(timeout_var.get()),
+            )
+            runs = int(runs_var.get())
+        except Exception as exc:  # pragma: no cover - user input errors
+            messagebox.showerror("Invalid input", str(exc))
+            return
+
+        root.withdraw()
+        try:
+            RSLFarmer(config).run(runs)
+        except Exception as exc:  # pragma: no cover - runtime errors
+            messagebox.showerror("Error", str(exc))
+        finally:
+            root.deiconify()
+
+    # Layout
+    frm = tk.Frame(root)
+    frm.pack(padx=10, pady=10)
+
+    tk.Label(frm, text="Start X").grid(row=0, column=0, sticky="e")
+    tk.Entry(frm, textvariable=start_x_var, width=6).grid(row=0, column=1)
+    tk.Label(frm, text="Start Y").grid(row=0, column=2, sticky="e")
+    tk.Entry(frm, textvariable=start_y_var, width=6).grid(row=0, column=3)
+    tk.Button(frm, text="Capture", command=capture_start).grid(row=0, column=4, padx=(5, 0))
+
+    tk.Label(frm, text="Completion image").grid(row=1, column=0, sticky="e")
+    tk.Entry(frm, textvariable=img_var, width=25).grid(row=1, column=1, columnspan=3)
+    tk.Button(frm, text="Browse", command=browse_img).grid(row=1, column=4, padx=(5, 0))
+
+    tk.Label(frm, text="Runs").grid(row=2, column=0, sticky="e")
+    tk.Entry(frm, textvariable=runs_var, width=6).grid(row=2, column=1)
+
+    tk.Label(frm, text="Delay").grid(row=2, column=2, sticky="e")
+    tk.Entry(frm, textvariable=delay_var, width=6).grid(row=2, column=3)
+
+    tk.Label(frm, text="Timeout").grid(row=3, column=0, sticky="e")
+    tk.Entry(frm, textvariable=timeout_var, width=6).grid(row=3, column=1)
+
+    tk.Button(frm, text="Start", command=start_runs).grid(row=4, column=0, columnspan=5, pady=(10, 0))
+
+    root.mainloop()
+
+
+def _parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--gui", action="store_true", help="Launch configuration window")
+    parser.add_argument("--start-x", type=int, help="X coordinate of Start/Replay button")
+    parser.add_argument("--start-y", type=int, help="Y coordinate of Start/Replay button")
+    parser.add_argument("--complete-img", help="Path to an image that signifies a completed run")
+    parser.add_argument("--runs", type=int, default=1, help="Number of runs to perform")
+    parser.add_argument("--delay", type=float, default=2.0, help="Delay between checks in seconds")
+    parser.add_argument("--timeout", type=float, default=120.0, help="Maximum time to wait for completion image")
+
+    argv = sys.argv[1:]
+    if not argv:
+        return argparse.Namespace(gui=True, start_x=None, start_y=None,
+                                  complete_img=None, runs=1, delay=2.0, timeout=120.0)
+    args = parser.parse_args(argv)
+    if not args.gui and (
+        args.start_x is None or args.start_y is None or args.complete_img is None
+    ):
+        parser.error("--start-x, --start-y and --complete-img are required unless --gui is used")
+    return args
+
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--start-x", type=int, required=True,
@@ -100,8 +214,12 @@ def _parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+
 def main() -> None:
     args = _parse_args()
+    if args.gui:
+        launch_gui()
+        return
     config = FarmerConfig(
         start_button=(args.start_x, args.start_y),
         complete_img=args.complete_img,
