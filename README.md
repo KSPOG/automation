@@ -23,9 +23,14 @@ A minimal farmer script inspired by [rslhelper](https://github.com/KSPOG/rslhelp
 resides in `rsl_farmer.py`. It uses [PyAutoGUI](https://pyautogui.readthedocs.io/)
 to click the "Start"/"Replay" button and detect when a run has finished.
 
+PyAutoGUI is available on PyPI and can be installed with `pip install pyautogui`
+or via the requirements file below.
+
+
 Install dependencies and run the farmer:
 
 ```bash
+pip install -r requirements.txt  # installs PyAutoGUI and other dependencies
 pip install -r requirements.txt
 python rsl_farmer.py --start-x 1000 --start-y 800 --complete-img victory.png --runs 10
 ```
