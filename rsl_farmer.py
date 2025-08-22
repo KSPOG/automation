@@ -19,6 +19,7 @@ be installed with ``python -m pip install pyautogui``.
 
 
 
+
 """
 
 
@@ -27,7 +28,6 @@ screen is required so the script knows when to start the next run.
 
 Requires the [PyAutoGUI](https://pyautogui.readthedocs.io/) package, which can
 be installed with ``python -m pip install pyautogui``.
-
 
 
 from __future__ import annotations
@@ -39,6 +39,7 @@ import time
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Tuple
+
 
 
 
@@ -74,6 +75,7 @@ class FarmerConfig:
 
 
 
+
     complete_img:
         Path to an image on disk that appears when a run is complete,
         e.g. a screenshot of the "Victory" banner.
@@ -89,7 +91,9 @@ class FarmerConfig:
     img_dir: str
 
 
+
     complete_img: str
+
 
     run_delay: float = 2.0
     timeout: float = 120.0
@@ -111,6 +115,7 @@ class RSLFarmer:
 
 
 
+
                 "pyautogui is required but not installed. Install with 'pip install pyautogui'."
             )
         self.config = config
@@ -126,8 +131,10 @@ class RSLFarmer:
 
 
 
+
             if pyautogui.locateOnScreen(self.config.complete_img, confidence=0.8):
                 return
+
 
             if time.time() - start_time > self.config.timeout:
                 raise RuntimeError("Run timed out waiting for completion image.")
@@ -165,6 +172,7 @@ def _parse_args() -> argparse.Namespace:
         action="store_true",
         help="Open a Tkinter window to configure and start the farmer",
 
+
         "--runs", type=int, default=1, help="Number of runs to perform"
 
     )
@@ -190,7 +198,14 @@ def load_config(path: str) -> FarmerConfig:
 
 
 def run_gui(config_path: str) -> None:
+    """Open a simple Tkinter window to configure and start the farmer.
+
+    This wrapper ensures the configuration is captured from a GUI before
+    launching the automation loop.
+    """
+
     """Open a simple Tkinter window to configure and start the farmer."""
+
 
     if pyautogui is None:
         raise RuntimeError(
@@ -263,6 +278,7 @@ def run_gui(config_path: str) -> None:
     tk.Label(root, text="Timeout").grid(row=3, column=0, sticky="e")
     tk.Entry(root, textvariable=timeout_var, width=6).grid(row=3, column=1)
     tk.Button(root, text="Start", command=start_farming).grid(row=3, column=4)
+
 
 def launch_gui() -> None:
     """Open a simple Tkinter window to configure and start the farmer."""
@@ -352,6 +368,7 @@ def main() -> None:
         run_gui(args.config)
         return
     config = load_config(args.config)
+
 def _parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--gui", action="store_true", help="Launch configuration window")

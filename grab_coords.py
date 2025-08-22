@@ -26,6 +26,7 @@ if pyautogui is None:
     )
 
 
+
 print("Move the mouse to the target and press Ctrl+C to capture the coordinates.")
 try:
     while True:

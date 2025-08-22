@@ -53,6 +53,7 @@ script is running, move the cursor over the "Start"/"Replay" button and press
 `Ctrl+C`. The final `x, y` values printed to the terminal can be copied into
 `config.ini`.
 
+
 Move the cursor over the "Start"/"Replay" button and press `Ctrl+C`. The final
 `x, y` values printed to the terminal can be copied into `config.ini`.
 
@@ -72,6 +73,7 @@ python rsl_farmer.py --gui
 ```
 
 On Windows, double‑click `run_farmer_gui.bat` to open the same window.
+
 
 Run the farmer from a shell (not the Python `help>` prompt):
 
